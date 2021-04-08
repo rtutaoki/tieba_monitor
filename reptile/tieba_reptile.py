@@ -26,8 +26,10 @@ class TiebaReptile:
         :param url: str
         :return: BeautifulSoup
         """
-        headers = "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) " \
-                  "Chrome/89.0.4389.114 Safari/537.36 "
+        headers = {
+            'user-agent': "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) "
+                          "Chrome/89.0.4389.114 Safari/537.36 ",
+        }
         response = requests.get(url, headers)
         html = response.text
         soup = BeautifulSoup(html, 'html.parser')
@@ -81,11 +83,12 @@ class TiebaReptile:
 
 if __name__ == '__main__':
     test = TiebaReptile("武汉理工大学")
-    # test.run(1)
+    test.run(1)
     # # url = r"https://tieba.baidu.com/f?kw=武汉理工大学&ie=utf-8&pn=0"
-    url = r"https://tieba.baidu.com/p/7234364626"
-    soup_test = test.pass_url(url)
-    print(soup_test.prettify())
-    res = soup_test.find_all('div', class_='d_post_content')
+    # url = r"https://tieba.baidu.com/p/7234364626"
+    # soup_test = test.pass_url(url)
+    # test.save_file(soup_test.prettify(), 4)
+    # print(soup_test.prettify())
+    # res = soup_test.find_all('div', class_='d_post_content')
     # # # print(res[0]['data-field'])
-    print(res)
+    #print(res)
