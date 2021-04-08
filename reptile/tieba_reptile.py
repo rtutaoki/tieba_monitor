@@ -1,7 +1,7 @@
 import requests
 from bs4 import BeautifulSoup
 import json
-from tiezi.tiezi import Tie
+from tiezi.tie import Tie
 
 
 class TiebaReptile:
@@ -35,16 +35,18 @@ class TiebaReptile:
         soup = BeautifulSoup(html, 'html.parser')
         return soup
 
-    def save_file(self, html_str, page_num):
+    def save_file(self, tie):
         """
         将爬取的html文件保存到本地
         :param html_str:
         :param page_num:
         :return:
         """
-        file_name = r"C:\Users\xd\Desktop\tieba_monitor\爬取的html文件/{}吧第{}页.html".format(self.tb_name, page_num)
+        file_name = r"C:\Users\xd\Desktop\tieba_monitor\爬取的文件\{}.txt".format(tie.id)
         with open(file_name, mode='w', encoding='utf-8') as f:
-            f.write(html_str)
+            for i in tie.content:
+                json.dump(i, f, ensure_ascii=False)
+                f.write('\n')
 
     def get_tiezi(self, soup):
         """
@@ -74,18 +76,18 @@ class TiebaReptile:
         url_list = self.get_url(page)
         for i in range(len(url_list)):
             soup = self.pass_url(url_list[i])
-            list_tie = self.get_tiezi(soup)
-            for j in range(len(list_tie)):
-                list_tie[j].fill_info()
+            tie_list = self.get_tiezi(soup)
+            for j in range(len(tie_list)):
+                tie_list[j].fill_info()
+                self.save_file(tie_list[j])
                 print("爬取进度：" + str(i * 50 + j + 1) + "/" + str(len(url_list) * 50))
-                print(list_tie[j].content)
 
 
 if __name__ == '__main__':
     test = TiebaReptile("武汉理工大学")
     test.run(1)
     # # url = r"https://tieba.baidu.com/f?kw=武汉理工大学&ie=utf-8&pn=0"
-    # url = r"https://tieba.baidu.com/p/7234364626"
+    # url = r"https://tieba.baidu.com/p/7288086844"
     # soup_test = test.pass_url(url)
     # test.save_file(soup_test.prettify(), 4)
     # print(soup_test.prettify())

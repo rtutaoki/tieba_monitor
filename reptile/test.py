@@ -1,5 +1,5 @@
 import json
-from tiezi.tiezi import Tie
+from tiezi.tie import Tie
 from tool import Tool
 from bs4 import BeautifulSoup
 

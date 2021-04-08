@@ -2,6 +2,7 @@ import requests
 from bs4 import BeautifulSoup
 from reptile.tool import Tool
 import json
+from tiezi.tiezi_content import TieContent
 
 
 # 帖子实体
@@ -11,7 +12,6 @@ class Tie:
         self.author = author
         self.title = ""
         self.content = []
-        self.user_list = []
 
     def fill_info(self):
         """
@@ -28,19 +28,18 @@ class Tie:
         title = soup.find('h1', class_='core_title_txt')['title']
         self.title = title
 
-        # 先将第一页内容获取
-        self.set_user_list(soup)
-        self.set_content(soup)
-
         page = self.get_page(soup)
-        for i in range(1, page):
+        for i in range(page):
             response = requests.get(url.format(i+1), headers)
             html = response.text
             soup = BeautifulSoup(html, 'html.parser')
 
-            # 将剩余页内容放入
-            self.set_user_list(soup)
-            self.set_content(soup)
+            # 将内容放入
+            user_list = self.set_user_list(soup)
+            content_list = self.set_content(soup)
+            for j in range(len(content_list)):
+                tc = TieContent(user_list[j]['id'], user_list[j]['name'], content_list[j])
+                self.content.append(tc.TC_to_dict())
 
     def get_page(self, soup):
         """
@@ -58,20 +57,30 @@ class Tie:
         :param soup: BeautifulSoup
         :return: list
         """
+        user_list = []
         data = soup.find_all('li', class_='d_name')
         for i in data:
             user = {}
             user_data = json.loads(i['data-field'])
             user['id'] = user_data['user_id']
             user['name'] = Tool().replace(str(i))
-            self.user_list.append(user)
+            user_list.append(user)
+        return user_list
 
     def set_content(self, soup):
         """
         用于获取所有楼层内容
         :param soup: BeautifulSoup
-        :return:
+        :return: list
         """
+        content_list = []
         data = soup.find_all('div', class_='d_post_content')
         for i in data:
-            self.content.append(Tool().replace(str(i)))
+            content_list.append(Tool().replace(str(i)))
+        return content_list
+
+
+if __name__ == '__main__':
+    tie = Tie("7288086844", "贴吧用户_0PCy216")
+    tie.fill_info()
+    print(tie.content)
