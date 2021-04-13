@@ -49,7 +49,7 @@ class Tie:
         """
         获取帖子的总页数
         :param soup: BeautifulSoup
-        :return:
+        :return: int
         """
         data = soup.find_all('span', class_='red')
         page = int(Tool().replace(str(data[1])))
@@ -59,7 +59,7 @@ class Tie:
         """
         用于获取所有楼层发言人的用户名及id
         :param soup: BeautifulSoup
-        :return: list
+        :return: list[{'id': , 'name': }]
         """
         user_list = []
         data = soup.find_all('li', class_='d_name')
@@ -75,7 +75,7 @@ class Tie:
         """
         用于获取所有楼层内容
         :param soup: BeautifulSoup
-        :return: list
+        :return: list[str]
         """
         content_list = []
         data = soup.find_all('div', class_='d_post_content')

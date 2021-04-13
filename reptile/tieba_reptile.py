@@ -14,7 +14,7 @@ class TiebaReptile:
         """
         用于得到所有想要爬取的页的url地址
         :param item_nums: int
-        :return: list
+        :return: list[str]
         """
         url_list = []
         page = item_nums // 50 + 1
@@ -43,9 +43,10 @@ class TiebaReptile:
         :param tie: Tie
         :return:
         """
-        if not os.path.exists("爬取的文件"):
-            os.mkdir("爬取的文件")
-        file_name = os.getcwd() + r"\爬取的文件\{}.txt".format(tie.tie_id)
+        file_path = os.path.join(os.path.dirname(os.getcwd()), "爬取的文件")
+        if not os.path.exists(file_path):
+            os.mkdir(file_path)
+        file_name = file_path + r"\{}.txt".format(tie.tie_id)
         with open(file_name, mode='w', encoding='utf-8') as f:
             if tie.title:
                 tie_str = str(tie.author_id) + "||" + str(tie.author) + "||" + str(tie.title) + "||" + str(tie.tie_id)
@@ -60,7 +61,7 @@ class TiebaReptile:
         从html文件中提取到各个帖子的位置
         :param item_nums: int
         :param soup: BeautifulSoup
-        :return: list
+        :return: list[Tie]
         """
         url_list = soup.find_all('li', class_='j_thread_list')
         tie_list = []

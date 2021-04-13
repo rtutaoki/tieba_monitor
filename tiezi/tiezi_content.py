@@ -20,7 +20,9 @@ def str_to_tc(tc_str):
     :param tc_str: str
     :return: TieContent
     """
-    info = tc_str.split("||")
+    tc_info = tc_str.split("||")
+    tc = TieContent(tc_info[0], tc_info[1], tc_info[2], tc_info[3])
+    return tc
 
 
 if __name__ == '__main__':
