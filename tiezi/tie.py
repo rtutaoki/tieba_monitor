@@ -8,8 +8,9 @@ from tiezi.tiezi_content import TieContent
 # 帖子实体
 class Tie:
     def __init__(self, tie_id, author):
-        self.id = tie_id
+        self.tie_id = tie_id
         self.author = author
+        self.author_id = ""
         self.title = ""
         self.content = []
 
@@ -18,7 +19,7 @@ class Tie:
         根据id爬取相应帖子并填充标题和内容到实体类
         :return:
         """
-        url = r'https://tieba.baidu.com/p/' + self.id + '?pn={}'
+        url = r'https://tieba.baidu.com/p/' + self.tie_id + '?pn={}'
         headers = "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) " \
                   "Chrome/89.0.4389.114 Safari/537.36 "
         response = requests.get(url.format(1), headers)
@@ -37,9 +38,12 @@ class Tie:
             # 将内容放入
             user_list = self.set_user_list(soup)
             content_list = self.set_content(soup)
+            if i == 0:
+                self.author_id = user_list[0]['id']
             for j in range(len(content_list)):
-                tc = TieContent(user_list[j]['id'], user_list[j]['name'], content_list[j])
-                self.content.append(tc.TC_to_dict())
+                if content_list[j]:
+                    tc = TieContent(user_list[j]['id'], user_list[j]['name'], content_list[j], tie_id=self.tie_id)
+                    self.content.append(tc)
 
     def get_page(self, soup):
         """

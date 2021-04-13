@@ -2,6 +2,7 @@ import requests
 from bs4 import BeautifulSoup
 import json
 from tiezi.tie import Tie
+import os
 
 
 class TiebaReptile:
@@ -42,10 +43,16 @@ class TiebaReptile:
         :param tie: Tie
         :return:
         """
-        file_name = r"C:\Users\xd\Desktop\tieba_monitor\爬取的文件\{}.txt".format(tie.id)
+        if not os.path.exists("爬取的文件"):
+            os.mkdir("爬取的文件")
+        file_name = os.getcwd() + r"\爬取的文件\{}.txt".format(tie.tie_id)
         with open(file_name, mode='w', encoding='utf-8') as f:
+            if tie.title:
+                tie_str = str(tie.author_id) + "||" + str(tie.author) + "||" + str(tie.title) + "||" + str(tie.tie_id)
+                f.write(tie_str)
+                f.write('\n')
             for i in tie.content:
-                json.dump(i, f, ensure_ascii=False)
+                f.write(i.tc_to_str())
                 f.write('\n')
 
     def get_tiezi(self, soup, item_nums):
