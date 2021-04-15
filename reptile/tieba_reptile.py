@@ -53,7 +53,7 @@ class TiebaReptile:
                 f.write(tie_str)
                 f.write('\n')
             for i in tie.content:
-                f.write(i.tc_to_str())
+                f.write(i.fc_to_str())
                 f.write('\n')
 
     def get_tiezi(self, soup, item_nums):
@@ -67,6 +67,8 @@ class TiebaReptile:
         tie_list = []
         n = 0   # 用于控制获取指定个数的帖子
         for i in url_list:
+            if n >= item_nums:
+                break
             json_dict = json.loads(i['data-field'])
             tie_id = str(json_dict['id'])
             if json_dict['author_nickname']:
@@ -76,8 +78,6 @@ class TiebaReptile:
 
             tie_list.append(Tie(tie_id, user_name))
             n += 1
-            if n >= item_nums:
-                break
         return tie_list
 
     def run(self, item_nums):
@@ -100,7 +100,7 @@ class TiebaReptile:
 
 if __name__ == '__main__':
     test = TiebaReptile("武汉理工大学")
-    test.run(3)
+    test.run(10)
     # # url = r"https://tieba.baidu.com/f?kw=武汉理工大学&ie=utf-8&pn=0"
     # url = r"https://tieba.baidu.com/p/7288086844"
     # soup_test = test.pass_url(url)

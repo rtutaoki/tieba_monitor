@@ -1,28 +1,28 @@
 # 帖子每层实体
-class TieContent:
+class FloorContent:
     def __init__(self, user_id="", user_name="", user_content="", tie_id=""):
         self.user_id = user_id
         self.user_name = user_name
-        self.user_content = user_content
+        self.floor_content = user_content
         self.tie_id = tie_id
 
-    def tc_to_str(self):
+    def fc_to_str(self):
         """
         将TieContent转换成字符串方便写入
         :return: str
         """
-        return str(self.user_id) + "||" + str(self.user_name) + "||" + str(self.user_content) + "||" + str(self.tie_id)
+        return str(self.user_id) + "||" + str(self.user_name) + "||" + str(self.floor_content) + "||" + str(self.tie_id)
 
 
-def str_to_tc(tc_str):
+def str_to_fc(tc_str):
     """
     将字符串转换成TieContent实体
     :param tc_str: str
     :return: TieContent
     """
-    tc_info = tc_str.split("||")
-    tc = TieContent(tc_info[0], tc_info[1], tc_info[2], tc_info[3])
-    return tc
+    fc_info = tc_str.split("||")
+    fc = FloorContent(fc_info[0], fc_info[1], fc_info[2], fc_info[3])
+    return fc
 
 
 if __name__ == '__main__':

@@ -2,7 +2,7 @@ import requests
 from bs4 import BeautifulSoup
 from reptile.tool import Tool
 import json
-from tiezi.tiezi_content import TieContent
+from tiezi.tiezi_content import FloorContent
 
 
 # 帖子实体
@@ -42,8 +42,8 @@ class Tie:
                 self.author_id = user_list[0]['id']
             for j in range(len(content_list)):
                 if content_list[j]:
-                    tc = TieContent(user_list[j]['id'], user_list[j]['name'], content_list[j], tie_id=self.tie_id)
-                    self.content.append(tc)
+                    fc = FloorContent(user_list[j]['id'], user_list[j]['name'], content_list[j], tie_id=self.tie_id)
+                    self.content.append(fc)
 
     def get_page(self, soup):
         """
@@ -80,11 +80,14 @@ class Tie:
         content_list = []
         data = soup.find_all('div', class_='d_post_content')
         for i in data:
-            content_list.append(Tool().replace(str(i)))
+            temp = str(i)
+            temp = Tool().replace(temp)
+            temp = Tool().replace_other(temp)
+            content_list.append(temp)
         return content_list
 
 
 if __name__ == '__main__':
-    tie = Tie("7288086844", "贴吧用户_0PCy216")
+    tie = Tie("7296193575", "爱zhaoyifen")
     tie.fill_info()
     print(tie.content)
