@@ -1,9 +1,8 @@
 from jieba.analyse import ChineseAnalyzer
 from whoosh.fields import Schema, TEXT, ID
-from tiezi.tiezi_content import str_to_fc
+from tiezi.floor_content import str_to_fc
 import os
 from whoosh.index import create_in, open_dir
-from whoosh.query import *
 from whoosh.qparser import QueryParser
 import json
 
@@ -11,7 +10,8 @@ import json
 class Indexes:
     def __init__(self):
         self.file_index = None
-        self.schema = Schema(user_id=ID(stored=True),
+        self.schema = Schema(floor_id=ID(stored=True),
+                             user_id=ID(stored=True),
                              user_name=ID(stored=True),
                              floor_content=TEXT(stored=True, analyzer=ChineseAnalyzer()),
                              tie_id=ID(stored=True))
@@ -52,18 +52,19 @@ class Indexes:
 
     def writer(self, doc_list):
         """
-        用于写入文档
+        用于向索引中写入文档
         :return:
         """
-        writer = self.file_index.writer()
+        my_writer = self.file_index.writer()
         for doc in doc_list:
-            writer.add_document(user_id=doc.user_id, user_name=doc.user_name, floor_content=doc.floor_content,
-                                tie_id=doc.tie_id)
-        writer.commit()
+            if not self.is_exist(doc.floor_id):
+                my_writer.add_document(floor_id=doc.floor_id, user_id=doc.user_id, user_name=doc.user_name,
+                                       floor_content=doc.floor_content, tie_id=doc.tie_id)
+        my_writer.commit()
 
     def add_doc(self, file_path):
         """
-        将单个文件加入索引,file_path为绝对路径
+        将单个帖子文件加入索引,file_path为绝对路径
         :param file_path: str
         :return:
         """
@@ -72,7 +73,7 @@ class Indexes:
 
     def add_all_doc(self):
         """
-        将所有文档加入索引中
+        将所有帖子文档加入索引中
         :return:
         """
         parent_path = os.path.dirname(os.getcwd())
@@ -86,33 +87,53 @@ class Indexes:
             print("索引已添加文档数" + str(index) + "/" + str(nums))
 
     def query(self, qus):
+        """
+        用于搜索含有该内容的文档
+        :param qus: str
+        :return:
+        """
+        result_list = []
         with self.file_index.searcher() as s:
             parser = QueryParser("floor_content", self.file_index.schema)
             my_query = parser.parse(qus)
-            results = s.search(my_query)
+            results = s.search(my_query, limit=5)
             results_num = len(results)
             print('一共发现%d份文档。' % results_num)
             page_num = results_num // 10 + 1
-            # for i in results:
-            #     print(json.dumps(i.fields(), ensure_ascii=False))
-            for i in range(1, page_num+1):
+            for i in range(1, page_num + 1):
                 results = s.search_page(my_query, i)
                 for j in results:
                     print(json.dumps(j.fields(), ensure_ascii=False))
+        #             result_list.append(json.dumps(j.fields(), ensure_ascii=False))
+        # return result_list
 
-    def build_index(self):
+    def is_exist(self, floor_id):
         """
-        用于重新创建索引并导入文件
+        用于查询索引中是否已经存在该文档
+        :param floor_id:
         :return:
         """
-        self.save_schema()
-        self.add_all_doc()
+        with self.file_index.searcher() as s:
+            parser = QueryParser("floor_id", self.file_index.schema)
+            my_query = parser.parse(floor_id)
+            results = s.search(my_query, limit=1)
+            results_num = len(results)
+        if results_num > 0:
+            return True
+        else:
+            return False
+
+    # def build_index(self):
+    #     """
+    #     用于重新创建索引并导入文件
+    #     :return:
+    #     """
+    #     self.save_schema()
+    #     self.add_all_doc()
 
 
 if __name__ == '__main__':
     pass
     idx = Indexes()
-    # idx.build_index()
+    idx.add_all_doc()
     idx.query("大学")
-
-

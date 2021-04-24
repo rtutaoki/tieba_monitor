@@ -49,7 +49,8 @@ class TiebaReptile:
         file_name = file_path + r"\{}.txt".format(tie.tie_id)
         with open(file_name, mode='w', encoding='utf-8') as f:
             if tie.title:
-                tie_str = str(tie.author_id) + "||" + str(tie.author) + "||" + str(tie.title) + "||" + str(tie.tie_id)
+                tie_str = str(tie.tie_id) + "||" + str(tie.author_id) + "||" + str(tie.author) + "||" + \
+                          str(tie.title) + "||" + str(tie.tie_id)
                 f.write(tie_str)
                 f.write('\n')
             for i in tie.content:
