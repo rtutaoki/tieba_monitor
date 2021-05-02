@@ -6,7 +6,7 @@ import os
 
 
 class TiebaReptile:
-    def __init__(self, name):
+    def __init__(self, name="武汉理工大学"):
         self.tb_name = name  # 贴吧名
         self.url = "https://tieba.baidu.com/f?kw=" + name + "&ie=utf-8&pn={}"  # 创建url，pn是页数，{}方便后续填充
 
@@ -43,7 +43,10 @@ class TiebaReptile:
         :param tie: Tie
         :return:
         """
-        file_path = os.path.join(os.path.dirname(os.getcwd()), "爬取的文件")
+        if os.getcwd().split('\\')[-1] == "reptile":
+            file_path = os.path.join(os.path.dirname(os.getcwd()), "爬取的文件")
+        else:
+            file_path = os.path.join(os.getcwd(), "爬取的文件")
         if not os.path.exists(file_path):
             os.mkdir(file_path)
         file_name = file_path + r"\{}.txt".format(tie.tie_id)

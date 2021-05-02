@@ -4,6 +4,7 @@ from tiezi.floor_content import str_to_fc
 import os
 from whoosh.index import create_in, open_dir
 from whoosh.qparser import QueryParser
+from whoosh import qparser
 import json
 
 
@@ -29,15 +30,15 @@ class Indexes:
                 doc_list.append(str_to_fc(line[:-1]))
         return doc_list
 
-    def save_schema(self):
+    def save_schema(self, index_dir):
         """
         将索引保存到本地
+        :param index_dir: str
         :return:
         """
-        index_dir = "indexdir"
         if not os.path.exists(index_dir):
             os.mkdir(index_dir)
-        ix = create_in(index_dir, self.schema)
+        ix = create_in("indexdir", self.schema)
         self.file_index = ix
 
     def open_index(self):
@@ -45,10 +46,14 @@ class Indexes:
         打开已经被创建的索引
         :return:
         """
-        if not os.path.exists("indexdir"):
-            self.save_schema()
+        if os.getcwd().split('\\')[-1] == "indexes":
+            index_dir = os.path.join(os.getcwd(), "indexdir")
         else:
-            self.file_index = open_dir("indexdir")
+            index_dir = os.path.join(os.getcwd(), r"indexes\indexdir")
+        if not os.path.exists(index_dir):
+            self.save_schema(index_dir)
+        else:
+            self.file_index = open_dir(index_dir)
 
     def writer(self, doc_list):
         """
@@ -76,25 +81,28 @@ class Indexes:
         将所有帖子文档加入索引中
         :return:
         """
-        parent_path = os.path.dirname(os.getcwd())
-        path = os.path.join(parent_path, "爬取的文件")
-        file_list = os.listdir(path)
+        if os.getcwd().split('\\')[-1] == "indexes":
+            file_path = os.path.join(os.path.dirname(os.getcwd()), "爬取的文件")
+        else:
+            file_path = os.path.join(os.getcwd(), "爬取的文件")
+        file_list = os.listdir(file_path)
         nums = len(file_list)
         index = 0
         for file_name in file_list:
-            self.add_doc(os.path.join(path, file_name))
+            self.add_doc(os.path.join(file_path, file_name))
             index += 1
             print("索引已添加文档数" + str(index) + "/" + str(nums))
 
-    def query(self, qus):
+    def query(self, qus, used):
         """
         用于搜索含有该内容的文档
+        :param used: set()
         :param qus: str
         :return:
         """
         result_list = []
         with self.file_index.searcher() as s:
-            parser = QueryParser("floor_content", self.file_index.schema)
+            parser = qparser.QueryParser("floor_content", schema=self.file_index.schema)
             my_query = parser.parse(qus)
             results = s.search(my_query, limit=5)
             results_num = len(results)
@@ -103,9 +111,24 @@ class Indexes:
             for i in range(1, page_num + 1):
                 results = s.search_page(my_query, i)
                 for j in results:
-                    print(json.dumps(j.fields(), ensure_ascii=False))
-        #             result_list.append(json.dumps(j.fields(), ensure_ascii=False))
-        # return result_list
+                    if j["floor_id"] not in used:
+                        result_list.append(json.dumps(j.fields(), ensure_ascii=False))
+                        used.add(j["floor_id"])
+        return result_list
+
+    def query_list(self, qus_list):
+        """
+        按照列表给出所有违规内容
+        :param qus_list: str
+        :return:
+        """
+        used = set()
+        result_list = []
+        if not qus_list:
+            return None
+        for que in qus_list:
+            result_list.extend(self.query(que, used))
+        return result_list
 
     def is_exist(self, floor_id):
         """
@@ -123,17 +146,22 @@ class Indexes:
         else:
             return False
 
-    # def build_index(self):
-    #     """
-    #     用于重新创建索引并导入文件
-    #     :return:
-    #     """
-    #     self.save_schema()
-    #     self.add_all_doc()
+    def build_index(self):
+        """
+        用于重新创建索引并导入文件
+        :return:
+        """
+        self.save_schema()
+        self.add_all_doc()
 
 
 if __name__ == '__main__':
     pass
     idx = Indexes()
     idx.add_all_doc()
-    idx.query("大学")
+    # que_list = []
+    # que_list.append("大学")
+    # result_list = idx.query_list(que_list)
+    # result_list = idx.query("你妈", set())
+    # print(result_list)
+    # print(len(result_list))
