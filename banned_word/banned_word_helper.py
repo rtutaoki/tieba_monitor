@@ -22,15 +22,19 @@ def add_word(s):
 def get_word_list():
     """
     从文件中获取禁用词列表
-    :return: list[str]
+    :return: str
     """
     word_path = os.getcwd()
-    if word_path.split('\\')[-1] == "banned_word":
+    local = word_path.split('\\')[-1]
+    if local == "banned_word":
         word_path = os.path.join(word_path, "banned_word.txt")
-    else:
+    elif local == "tieba_monitor":
         word_path = os.path.join(word_path, r"banned_word\banned_word.txt")
+    else:
+        print("路径有问题")
+        return ""
     if not os.path.exists(word_path):
-        return []
+        return ""
     word_list = []
     with open(word_path, mode='r', encoding='utf-8') as f:
         for word in f.readlines():

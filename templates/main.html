@@ -3,9 +3,10 @@
 <head>
     <meta http-equiv="Content-Type" content="text/html; charset=utf-8">
     <title>主页面</title>
-    <script src="/static/js/main.js"></script>
+    <script src="/static/js/common.js"></script>
     <script src="/static/js/jquery-3.6.0.min.js"></script>
-    <style>
+    <script src="/static/layer/layer.js"></script>
+    <style type="text/css">
         * {
             margin: 0;
             padding: 0;
@@ -41,13 +42,14 @@
 
 
         table thead th {
-            background: #ccc;
+            background: #cccccc;
         }
-
+        .match{
+            color: red
+        }
     </style>
 </head>
 <body>
-<div id="foo" style="width: 100%; height: 100%"></div>
 <div >
     <input type="search" id="addWordInput">
     <input type="button" value="添加禁用词" id="addWordBtn">
@@ -69,4 +71,103 @@
 </table>
 
 </body>
+<script>
+    //添加响应事件
+window.onload=function(){
+    document.getElementById("searchBtn").addEventListener("click",query,false);
+    document.getElementById("addWordBtn").addEventListener("click",addWord,false);
+
+};
+
+//用于添加禁用词
+function addWord(){
+    var word = document.getElementById("addWordInput").value;
+    if(word === ""){
+        alert("输入不能为空！");
+        return;
+    }
+    var formData = new FormData();
+    formData.append("word", word);
+    var url = "http://127.0.0.1:5000/add_word";
+    var request = new XMLHttpRequest();
+    request.onload = function (){
+        if(request.status === 200){
+            var res = request.response;
+            res = JSON.parse(res);
+            alert(res);
+            document.getElementById("addWordInput").value="";
+        }
+    }
+    request.open("POST", url);
+    request.send(formData);
+}
+
+//用于清空之前的内容
+function clear(){
+    var artTable = document.getElementById("table");
+    console.debug(artTable.getElementsByTagName("thead")[0]);
+    var artBody=artTable.tBodies[0];
+    artBody.parentNode.outerHTML = artBody.parentNode.outerHTML.replace(artBody.innerHTML, "");
+}
+
+//查询按钮实现查询功能
+function query(){
+    g_showLoading()
+    document.getElementById("searchBtn").disabled = true
+    clear();
+    var url = "http://127.0.0.1:5000/search";
+    var request = new XMLHttpRequest();
+    request.onload = function (){
+        if(request.status === 200){
+            var res = request.response;
+            res = JSON.parse(res);
+            if(res.length === 0){
+                layer.msg("无结果！请添加禁用词或用户言论正常。");
+            }
+            else {
+                for(var i in res){
+                    var content = JSON.parse(res[i]);
+                    addTableContent(content);
+                }
+                layer.msg("检测完毕");
+            }
+            document.getElementById("searchBtn").disabled = false
+        }else {
+            layer.msg("检测失败！");
+        }
+    }
+    request.open("GET", url);
+    request.send();
+}
+
+//动态向表格中添加数据
+function addTableContent(content){
+    // var test = {"floor_id": "123123", "user_id": "111", "user_name": "xd", "floor_content": "哈哈哈", "tie_id": "999"}
+
+
+    var trElt=document.createElement("tr");
+    trElt.setAttribute("id","floor-"+content.floor_id);//设置tr的属性
+    var floorId=document.createElement("td");
+    var userId=document.createElement("td");
+    var userName=document.createElement("td");
+    var floorContent=document.createElement("td");
+    var tieID = document.createElement("td");
+
+    floorId.appendChild(document.createTextNode(content.floor_id));
+    userId.appendChild(document.createTextNode(content.user_id));
+    userName.appendChild(document.createTextNode(content.user_name));
+    floorContent.innerHTML = content.floor_content;
+    tieID.appendChild(document.createTextNode(content.tie_id));
+
+    console.log(content.floor_content);
+
+    trElt.appendChild(floorId);
+    trElt.appendChild(userId);
+    trElt.appendChild(userName);
+    trElt.appendChild(floorContent);
+    trElt.appendChild(tieID);
+
+    document.getElementById("floor-body").appendChild(trElt);
+}
+</script>
 </html>

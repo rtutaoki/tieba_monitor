@@ -14,8 +14,8 @@ def hello():
 
 @app.route('/search', methods=['GET'])
 def search():
-    tieba = TiebaReptile()  # 默认name=“武汉理工大学”
-    tieba.run(10)
+    # tieba = TiebaReptile()  # 默认name=“武汉理工大学”
+    # tieba.run(10)
 
     word_list = banned_word_helper.get_word_list()
 

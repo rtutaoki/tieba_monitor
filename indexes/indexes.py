@@ -1,12 +1,13 @@
 from jieba.analyse import ChineseAnalyzer
 from whoosh.fields import Schema, TEXT, ID
-from tiezi.floor_content import str_to_fc
+from tiezi.floor_content import str_to_fc,FloorContent
 import os
 from whoosh.index import create_in, open_dir
 from whoosh.qparser import QueryParser
 from whoosh import qparser
 import json
 
+from banned_word import banned_word_helper
 
 class Indexes:
     def __init__(self):
@@ -93,17 +94,16 @@ class Indexes:
             index += 1
             print("索引已添加文档数" + str(index) + "/" + str(nums))
 
-    def query(self, qus, used):
+    def query(self, ques, used):
         """
         用于搜索含有该内容的文档
-        :param used: set()
-        :param qus: str
+        :param ques: str
         :return:
         """
-        result_list = []
+        result_part_list = []
         with self.file_index.searcher() as s:
             parser = qparser.QueryParser("floor_content", schema=self.file_index.schema)
-            my_query = parser.parse(qus)
+            my_query = parser.parse(ques)
             results = s.search(my_query, limit=5)
             results_num = len(results)
             print('一共发现%d份文档。' % results_num)
@@ -112,22 +112,21 @@ class Indexes:
                 results = s.search_page(my_query, i)
                 for j in results:
                     if j["floor_id"] not in used:
-                        result_list.append(json.dumps(j.fields(), ensure_ascii=False))
+                        j.fields()["floor_content"] = j.highlights("floor_content")
+                        result_part_list.append(json.dumps(j.fields(), ensure_ascii=False))
                         used.add(j["floor_id"])
-        return result_list
+        return result_part_list
 
-    def query_list(self, qus_list):
+    def query_list(self, ques_list):
         """
-        按照列表给出所有违规内容
-        :param qus_list: str
-        :return:
+        用于查询一个列表的违规词
+        :param ques_list: list[str]
+        :return: list
         """
         used = set()
         result_list = []
-        if not qus_list:
-            return None
-        for que in qus_list:
-            result_list.extend(self.query(que, used))
+        for ques in ques_list:
+            result_list.extend(self.query(ques, used))
         return result_list
 
     def is_exist(self, floor_id):
@@ -146,22 +145,22 @@ class Indexes:
         else:
             return False
 
-    def build_index(self):
-        """
-        用于重新创建索引并导入文件
-        :return:
-        """
-        self.save_schema()
-        self.add_all_doc()
+    # def build_index(self):
+    #     """
+    #     用于重新创建索引并导入文件
+    #     :return:
+    #     """
+    #     self.save_schema()
+    #     self.add_all_doc()
 
 
 if __name__ == '__main__':
     pass
     idx = Indexes()
-    idx.add_all_doc()
-    # que_list = []
+    # idx.add_all_doc()
+    que_list = []
     # que_list.append("大学")
-    # result_list = idx.query_list(que_list)
-    # result_list = idx.query("你妈", set())
-    # print(result_list)
-    # print(len(result_list))
+    s = "你妈"
+    result_list = idx.query(s)
+    print(result_list)
+    print(len(result_list))
