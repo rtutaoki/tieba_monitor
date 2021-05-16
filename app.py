@@ -12,8 +12,8 @@ def hello():
     return render_template("main.html")
 
 
-@app.route('/search', methods=['GET'])
-def search():
+@app.route('/monitor', methods=['GET'])
+def monitor():
     # tieba = TiebaReptile()  # 默认name=“武汉理工大学”
     # tieba.run(10)
 
@@ -31,6 +31,15 @@ def add_word():
     s = request.form.get('word')
     banned_word_helper.add_word(s)
     return json.dumps("添加成功！")
+
+
+@app.route('/search/<word>', methods=['GET'])
+def search(word):
+    print(word)
+    idx = Indexes()
+    result_list = idx.query(word, set())
+
+    return json.dumps(result_list)
 
 
 if __name__ == '__main__':

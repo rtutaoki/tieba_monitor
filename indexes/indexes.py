@@ -100,6 +100,8 @@ class Indexes:
         :param ques: str
         :return:
         """
+        if not ques:
+            return []
         result_part_list = []
         with self.file_index.searcher() as s:
             parser = qparser.QueryParser("floor_content", schema=self.file_index.schema)
@@ -123,6 +125,8 @@ class Indexes:
         :param ques_list: list[str]
         :return: list
         """
+        if not ques_list or len(ques_list) <= 0:
+            return []
         used = set()
         result_list = []
         for ques in ques_list:

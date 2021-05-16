@@ -20,14 +20,6 @@
             text-align: center;
         }
 
-        /*关键设置 tbody出现滚动条*/
-        table tbody {
-            display: block;
-            height: 800px;
-            overflow-x:hidden;
-            overflow-y: scroll;
-        }
-
         table thead,
         tbody tr {
             display: table;
@@ -35,25 +27,28 @@
             table-layout: fixed;
         }
 
-        /*关键设置：滚动条默认宽度是16px 将thead的宽度减16px*/
-        table thead {
-            width: calc(100% - 1em)
-        }
-
-
         table thead th {
             background: #cccccc;
         }
         .match{
             color: red
         }
+        .top{
+            width: 100px;
+            height: 50px;
+        }
+        .search{
+            width: 800px;
+            height: 30px;
+        }
     </style>
 </head>
 <body>
 <div >
-    <input type="search" id="addWordInput">
-    <input type="button" value="添加禁用词" id="addWordBtn">
-    <input type="button" value="检测" id="searchBtn">
+    <input class="top" type="button" value="添加禁用词" id="addWordBtn">
+    <input class="top" type="button" value="检测" id="monitorBtn">
+    <input class="search" type="search" id="searchInput">
+    <input class="top" type="button" value="搜索" id="searchBtn">
 </div>
 <table id="table" width="100%" border="1">
     <thead>
@@ -74,14 +69,14 @@
 <script>
     //添加响应事件
 window.onload=function(){
-    document.getElementById("searchBtn").addEventListener("click",query,false);
+    document.getElementById("monitorBtn").addEventListener("click",monitor,false);
     document.getElementById("addWordBtn").addEventListener("click",addWord,false);
-
+    document.getElementById("searchBtn").addEventListener("click",query,false);
 };
 
 //用于添加禁用词
 function addWord(){
-    var word = document.getElementById("addWordInput").value;
+    var word = prompt("请输入需要添加的禁用词", "");
     if(word === ""){
         alert("输入不能为空！");
         return;
@@ -113,9 +108,47 @@ function clear(){
 //查询按钮实现查询功能
 function query(){
     g_showLoading()
-    document.getElementById("searchBtn").disabled = true
+    document.getElementById("searchBtn").disabled = true;
+    var word = document.getElementById("searchInput").value;
+    if(word === ""){
+        alert("输入不能为空！");
+        return;
+    }
+    console.log(word)
+    var formData = new FormData();
+    formData.append("word", word);
     clear();
-    var url = "http://127.0.0.1:5000/search";
+    var url = "http://127.0.0.1:5000/search/" + word;
+    var request = new XMLHttpRequest();
+    request.onload = function (){
+        if(request.status === 200){
+            var res = request.response;
+            res = JSON.parse(res);
+            if(res.length === 0){
+                layer.msg("无结果！");
+            }
+            else {
+                for(var i in res){
+                    var content = JSON.parse(res[i]);
+                    addTableContent(content);
+                }
+                layer.msg("检测完毕");
+            }
+            document.getElementById("searchBtn").disabled = false
+        }else {
+            layer.msg("检测失败！");
+        }
+    }
+    request.open("GET", url);
+    request.send();
+}
+
+//查询按钮实现检测功能
+function monitor(){
+    g_showLoading()
+    document.getElementById("monitorBtn").disabled = true
+    clear();
+    var url = "http://127.0.0.1:5000/monitor";
     var request = new XMLHttpRequest();
     request.onload = function (){
         if(request.status === 200){
@@ -131,7 +164,7 @@ function query(){
                 }
                 layer.msg("检测完毕");
             }
-            document.getElementById("searchBtn").disabled = false
+            document.getElementById("monitorBtn").disabled = false
         }else {
             layer.msg("检测失败！");
         }
